@@ -5,6 +5,7 @@ import com.fernandoschimidt.car_rentel.services.auth.jwt.UserService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -31,15 +32,17 @@ public class WebSecurityConfiguration {
     @Bean
     public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http.csrf(AbstractHttpConfigurer::disable).authorizeHttpRequests(request ->
-                        request.requestMatchers("/api/auth/**").permitAll()
-                                .requestMatchers("/api/admin/**").hasAnyAuthority(UserRole.ADMIN.name())
-                                .requestMatchers("/api/customer/**").hasAnyAuthority(UserRole.CUSTOMER.name())
+                        request
+                                .requestMatchers(HttpMethod.POST,"/api/auth/**").permitAll()
+                                .requestMatchers(HttpMethod.POST, "/api/admin/**").hasAnyAuthority(UserRole.ADMIN.name())
+                                .requestMatchers(HttpMethod.POST, "/api/customer/**").hasAnyAuthority((UserRole.CUSTOMER.name()))
                                 .anyRequest().authenticated()).sessionManagement(manager ->
                         manager.sessionCreationPolicy(SessionCreationPolicy.STATELESS)).
                 authenticationProvider(authenticationProvider()).
                 addFilterBefore(jwtAuuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
         return http.build();
-    }
+   }
+
 
     @Bean
     public PasswordEncoder passwordEncoder() {
